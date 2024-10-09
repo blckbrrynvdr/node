@@ -1,7 +1,8 @@
+import {errorHandler} from "./middleware/error-handler";
+
 const config = require('./config');
 const express = require('express');
 const routes = require('./routes');
-const errorHandler = require('./middleware/error-handler');
 const path = require('path');
 
 const app = express();

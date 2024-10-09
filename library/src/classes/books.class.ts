@@ -1,11 +1,12 @@
-const Book = require('./book.class');
+import {Book} from "./book.class";
 
 
-class Books {
+export class Books {
+	private readonly books: Book[] = [];
 	/**
 	 * @param { Book[] } books
 	 */
-	constructor(books = []) {
+	constructor(books: Book[] = []) {
 		this.books = books;
 	}
 
@@ -55,5 +56,3 @@ class Books {
 		}
 	}
 }
-
-module.exports = Books;

@@ -1,8 +1,9 @@
-const router = require('express').Router();
-const fileMulter = require('../../middleware/file');
-const Book = require('../../models/book');
-const {v4: uuid} = require("uuid");
+import {fileMulter} from "../../middleware/file";
+import {Book} from "../../models/book";
+import express from 'express';
+import uuid from "uuid";
 
+const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {

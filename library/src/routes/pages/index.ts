@@ -1,8 +1,9 @@
+import {page404} from "../../middleware/page-404";
+import {Book} from "../../models/book";
+
 const express = require('express');
 const router = express.Router();
-const page404 = require('../../middleware/page-404');
 const redisClient = require('../../store/redis');
-const Book = require("../../models/book");
 const {v4: uuid} = require("uuid");
 
 
