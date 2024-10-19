@@ -1,24 +1,26 @@
 import {fileMulter} from "../../middleware/file";
-import {Book} from "../../models/book";
-import express from 'express';
-import uuid from "uuid";
+import {Router} from 'express';
+import {v4 as uuid} from 'uuid';
+import {BooksRepository} from "../../classes/book";
+import container from "../../infrastructure/container";
 
-const router = express.Router();
+const router = Router();
+const repo: BooksRepository = container.get(BooksRepository);
 
-router.get('/', async (req, res) => {
+router.get('/', async (req: any, res: any) => {
     try {
-        const books = await Book.find().select('-__v');
+        const books = await repo.getBooks();
         res.status(201).json(books);
     } catch (e) {
         res.status(500).json(e);
     }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: any, res: any) => {
     const {id} = req.params;
 
     try {
-        const book = await Book.findById(id).select('-__v');
+        const book = await repo.getBook(id);
         if (!book) {
             res.status(404).json('404');
         }
@@ -28,24 +30,27 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.post('/', fileMulter.single('fileBook'), async (req, res) => {
+router.post('/', fileMulter.single('fileBook'), async (req: any, res: any) => {
     try {
-        const newBook = new Book({
-            ...req.body, _id: uuid(), fileName: req.file ? req.file.path : '',
+        const newBook = await repo.createBook({
+            ...req.body,
+            _id: uuid(),
+            fileName: req.file ? req.file.path : ''
         });
-        await newBook.save();
+
         res.status(201).json(newBook);
     } catch (e) {
         res.status(500).json(e);
     }
 });
 
-router.put('/:id', fileMulter.single('fileBook'), async (req, res) => {
+router.put('/:id', fileMulter.single('fileBook'), async (req: any, res: any) => {
     const {id} = req.params;
     try {
-        const book = await Book.findByIdAndUpdate(id, {
-            ...req.body, fileName: req.file ? req.file.path : '',
-        }).select('-__v');
+        const book = await repo.updateBook(id, {
+            ...req.body,
+            fileName: req.file ? req.file.path : '',
+        });
         if (!book) {
             res.status(404).json('404');
         }
@@ -55,20 +60,20 @@ router.put('/:id', fileMulter.single('fileBook'), async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req: any, res: any) => {
     const {id} = req.params;
     try {
-        await Book.deleteOne({_id: id});
+        await repo.deleteBook(id);
         res.status(201).json('ok');
     } catch (e) {
         res.status(500).json(e);
     }
 });
 
-router.get('/:id/download', async (req, res) => {
+router.get('/:id/download', async (req: any, res: any) => {
     const {id} = req.params;
     try {
-        const book = await Book.findById(id).select('-__v');
+        const book = await repo.getBook(id);
         if (!book || !book?.fileName) {
             res.status(404).json('404');
         }
@@ -78,4 +83,4 @@ router.get('/:id/download', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

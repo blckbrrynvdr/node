@@ -1,17 +1,15 @@
+import 'reflect-metadata';
 import {errorHandler} from "./middleware/error-handler";
-
-const config = require('./config');
-const express = require('express');
-const routes = require('./routes');
-const path = require('path');
+import config from "./infrastructure/config";
+import express from "express";
+import routes from "./routes";
+import * as path from "path";
+import './infrastructure/mongoose';
 
 const app = express();
 
-const mongoose = require('mongoose');
-
-async function start(PORT, UrlDb) {
+async function start(PORT: any) {
 	try {
-		await mongoose.connect(UrlDb, { dbName: 'books' });
 		app.listen(PORT, () => {
 			console.log(`Server started on port ${PORT}`);
 		})
@@ -26,6 +24,5 @@ app.set('views', path.join(__dirname, '/views'));
 app.use('/', routes);
 app.use(errorHandler);
 
-const URL_DB = config.URL_DB;
 const PORT = config.PORT;
-start(PORT, URL_DB);
+start(PORT);

@@ -1,9 +1,10 @@
-const express = require('express');
-const router = express.Router();
-const api = require('./api');
-const pages = require('./pages');
+import express, {Router} from "express";
+import api from "./api";
+import pages from "./pages";
+
+const router = Router();
 
 router.use('/api', express.json(), api);
 router.use('/', pages);
 
-module.exports = router;
+export default router;
