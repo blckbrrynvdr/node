@@ -1,15 +1,18 @@
-const express = require('express');
-const router = express.Router();
-const page404 = require('../../middleware/page-404');
-const redisClient = require('../../store/redis');
-const Book = require("../../models/book");
-const {v4: uuid} = require("uuid");
+import {page404} from "../../middleware/page-404";
+import {Router} from "express";
+import {v4 as uuid} from 'uuid';
+import container from '../../infrastructure/container';
+import {BooksRepository} from '../../classes/book';
+import redisClient from '../../infrastructure/redis';
+
+const router = Router();
+const repo: BooksRepository = container.get(BooksRepository);
 
 
 router.get('/', async (req, res) => {
     let books;
     try {
-        books = await Book.find().select('-__v');
+        books = await repo.getBooks();
     } catch (e) {
         res.redirect('/404');
     }
@@ -28,10 +31,9 @@ router.get('/book/create', (req, res) => {
 
 router.post('/book/create', async (req, res) => {
     try {
-        const newBook = new Book({
+        await repo.createBook({
             ...req.body, _id: uuid(),
         });
-        await newBook.save();
     } catch (e) {
         res.redirect('/');
     }
@@ -43,7 +45,7 @@ router.get('/book/:id', async (req, res) => {
     let book;
 
     try {
-        book = await Book.findById(id).select('-__v');
+        book = await repo.getBook(id);
         if (!book) {
             res.redirect('/404');
         }
@@ -65,34 +67,33 @@ router.get('/book/update/:id', async (req, res) => {
     let book;
 
     try {
-        book = await Book.findById(id).select('-__v');
+        book = await repo.getBook(id);
     } catch (e) {
         res.redirect('/404');
     }
 
     res.render('pages/update', {
-        title: 'Обновление книги | ' + book.title,
+        title: 'Обновление книги | ' + book?.title,
         book
     });
 });
 
 router.post('/book/update/:id', async (req, res) => {
     const {id} = req.params;
-    let book;
 
     try {
-        book = await Book.findByIdAndUpdate(id, {
+        const book = await repo.updateBook(id, {
             ...req.body,
-        }).select('-__v');
+        });
         if (!book) {
             res.status(404).json('404');
         }
-        res.redirect('/404');
+        if (book?._id) {
+            res.redirect(`/book/${book._id}`);
+        }
     } catch (e) {
         res.redirect('/404');
     }
-
-    res.redirect(`/book/${book.id}`);
 });
 
 
@@ -100,13 +101,13 @@ router.post('/book/delete/:id', async (req, res) => {
     const {id} = req.params;
 
     try {
-        await Book.deleteOne({_id: id});
+        await repo.deleteBook(id);
     } catch (e) {
         res.redirect('/404');
     }
     res.redirect(`/`);
 });
 
-router.use(page404)
+router.use(page404);
 
-module.exports = router;
+export default router;

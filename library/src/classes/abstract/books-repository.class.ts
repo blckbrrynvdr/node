@@ -1,9 +1,14 @@
-import {Book} from "../../interfaces/book.interface";
+import {Book, CreateBookDto} from "../../interfaces/book";
+import {injectable} from "inversify";
 
 export abstract class BooksRepositoryClass {
-	createBook(book: Book) {}
-	getBook(id: string) {}
-	getBooks() {}
-	updateBook(id: string){}
-	deleteBook(id: string){}
+	abstract createBook(book: CreateBookDto): Promise<Book>;
+
+	abstract getBook(id: string): Promise<Book | null>;
+
+	abstract getBooks(): Promise<Book[]>;
+
+	abstract updateBook(id: string, book: Book): Promise<Book | null>;
+
+	abstract deleteBook(id: string): Promise<string>;
 }
